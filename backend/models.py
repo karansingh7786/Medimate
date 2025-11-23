@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, Text, Date, Time, ForeignKey
 from sqlalchemy.orm import relationship
 from database import Base
 
+
 # -------------------- USERS --------------------
 
 class User(Base):

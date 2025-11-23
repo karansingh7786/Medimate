@@ -1,6 +1,9 @@
 from fastapi import FastAPI
 from database import Base, engine
-from routers import auth, user
+
+from routers import auth, user ,appointment
+#from routers import appointment
+
 
 # Create all database tables
 Base.metadata.create_all(bind=engine)
@@ -11,6 +14,7 @@ app = FastAPI()
 # Include Routers
 app.include_router(auth.router)
 app.include_router(user.router)
+app.include_router(appointment.router)
 
 @app.get("/")
 def home():

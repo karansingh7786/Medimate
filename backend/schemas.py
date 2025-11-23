@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from datetime import date, time
 
 class UserCreate(BaseModel):
     name: str
@@ -18,3 +19,10 @@ class ShowUser(BaseModel):
 
     class Config:
         orm_mode = True
+
+class AppointmentCreate(BaseModel):
+    patient_id: int
+    doctor_id: int
+    appointment_date: date
+    appointment_time: time
+    symptoms: str | None = None

@@ -2,7 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-DATABASE_URL = "mysql+pymysql://root:Satrujeet28@localhost/medimate"
+DATABASE_URL = "mysql+pymysql://root:Satrujeet28@localhost/medimate_backend"
 
 engine = create_engine(DATABASE_URL)
 
@@ -20,6 +20,3 @@ def get_db():
 
 
 
-
-
-DATABASE_URL = "mysql+pymysql://root:Satrujeet28@localhost/medimate_new"

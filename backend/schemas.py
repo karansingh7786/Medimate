@@ -26,3 +26,11 @@ class AppointmentCreate(BaseModel):
     appointment_date: date
     appointment_time: time
     symptoms: str | None = None
+
+class PrescriptionCreate(BaseModel):
+    appointment_id: int
+    diagnosis: str
+    treatment: str
+    medication: str
+    dosage: str
+    instructions: str

@@ -49,17 +49,20 @@ class MedicalRecord(Base):
 
 
 # -------------------- PRESCRIPTIONS --------------------
-
 class Prescription(Base):
     __tablename__ = "prescriptions"
-    
+
     id = Column(Integer, primary_key=True, index=True)
-    record_id = Column(Integer, ForeignKey("medical_records.id"), nullable=False)
+    appointment_id = Column(Integer, ForeignKey("appointments.id"), nullable=False)
+    diagnosis = Column(Text, nullable=False)
+    treatment = Column(Text, nullable=False)
     medication = Column(Text, nullable=False)
     dosage = Column(Text, nullable=False)
     instructions = Column(Text, nullable=False)
 
-    record = relationship("MedicalRecord", foreign_keys=[record_id])
+    appointment = relationship("Appointment", foreign_keys=[appointment_id])
+
+
 
 
 # -------------------- FEEDBACK --------------------

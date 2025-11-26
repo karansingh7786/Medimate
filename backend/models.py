@@ -30,6 +30,8 @@ class Appointment(Base):
 
     patient = relationship("User", foreign_keys=[patient_id])
     doctor = relationship("User", foreign_keys=[doctor_id])
+    prescription = relationship("Prescription", back_populates="appointment", uselist=False)
+
 
 
 # -------------------- MEDICAL RECORDS --------------------
@@ -53,14 +55,15 @@ class Prescription(Base):
     __tablename__ = "prescriptions"
 
     id = Column(Integer, primary_key=True, index=True)
-    appointment_id = Column(Integer, ForeignKey("appointments.id"), nullable=False)
-    diagnosis = Column(Text, nullable=False)
-    treatment = Column(Text, nullable=False)
-    medication = Column(Text, nullable=False)
-    dosage = Column(Text, nullable=False)
-    instructions = Column(Text, nullable=False)
+    appointment_id = Column(Integer, ForeignKey("appointments.id"))
+    diagnosis = Column(String(255))
+    treatment = Column(String(255))
+    medication = Column(String(255))
+    dosage = Column(String(255))
+    instructions = Column(String(255))
 
-    appointment = relationship("Appointment", foreign_keys=[appointment_id])
+    appointment = relationship("Appointment", back_populates="prescription")
+
 
 
 

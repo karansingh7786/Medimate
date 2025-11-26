@@ -1,29 +1,37 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from datetime import date
 from database import get_db
-from datetime import date, time
 from models import User, Appointment
 from schemas import AppointmentCreate
+from ai.symptom_summary import summarize_symptoms
+from ai.doctor_availablity import suggest_slot
 
 router = APIRouter(
     prefix="/appointment",
     tags=["Appointment"]
 )
 
+# -----------------------------------------------------------
+# 1️⃣ BOOK APPOINTMENT
+# -----------------------------------------------------------
 @router.post("/book")
 def book_appointment(request: AppointmentCreate, db: Session = Depends(get_db)):
 
-    # 1️⃣ Check if patient exists
+    # Check if patient exists
     patient = db.query(User).filter(User.id == request.patient_id).first()
     if not patient:
-        raise HTTPException(status_code=404, detail="Patient not found")
+        raise HTTPException(404, "Patient not found")
 
-    # 2️⃣ Check if doctor exists
-    doctor = db.query(User).filter(User.id == request.doctor_id, User.role == "doctor").first()
+    # Check if doctor exists
+    doctor = db.query(User).filter(
+        User.id == request.doctor_id,
+        User.role == "doctor"
+    ).first()
     if not doctor:
-        raise HTTPException(status_code=404, detail="Doctor not found or not a doctor")
+        raise HTTPException(404, "Doctor not found")
 
-    # 3️⃣ Prevent double booking (same doctor, date, time)
+    # Prevent double booking
     existing = db.query(Appointment).filter(
         Appointment.doctor_id == request.doctor_id,
         Appointment.appointment_date == request.appointment_date,
@@ -31,10 +39,10 @@ def book_appointment(request: AppointmentCreate, db: Session = Depends(get_db)):
     ).first()
 
     if existing:
-        raise HTTPException(status_code=409, detail="This time slot is already booked")
+        raise HTTPException(409, "This time slot is already booked")
 
-    # 4️⃣ Create new appointment
-    new_appointment = Appointment(
+    # Create new appointment
+    new_appt = Appointment(
         patient_id=request.patient_id,
         doctor_id=request.doctor_id,
         appointment_date=request.appointment_date,
@@ -43,27 +51,31 @@ def book_appointment(request: AppointmentCreate, db: Session = Depends(get_db)):
         status="Booked"
     )
 
-    db.add(new_appointment)
+    db.add(new_appt)
     db.commit()
-    db.refresh(new_appointment)
+    db.refresh(new_appt)
 
     return {
         "status": "success",
         "message": "Appointment booked successfully",
-        "appointment_id": new_appointment.id
+        "appointment_id": new_appt.id
     }
 
+
+# -----------------------------------------------------------
+# 2️⃣ PATIENT → MY APPOINTMENTS
+# -----------------------------------------------------------
 @router.get("/my-appointments/{patient_id}")
 def get_my_appointments(patient_id: int, db: Session = Depends(get_db)):
+
     appointments = db.query(Appointment).filter(
         Appointment.patient_id == patient_id
     ).all()
 
     if not appointments:
-        return {"status": "success", "appointments": []}
+        return {"appointments": []}
 
     result = []
-
     for appt in appointments:
         result.append({
             "appointment_id": appt.id,
@@ -74,7 +86,12 @@ def get_my_appointments(patient_id: int, db: Session = Depends(get_db)):
             "status": appt.status
         })
 
-    return {"status": "success", "appointments": result}
+    return {"appointments": result}
+
+
+# -----------------------------------------------------------
+# 3️⃣ DOCTOR → TODAY’S APPOINTMENTS
+# -----------------------------------------------------------
 @router.get("/today-appointments/{doctor_id}")
 def today_appointments(doctor_id: int, db: Session = Depends(get_db)):
 
@@ -86,7 +103,6 @@ def today_appointments(doctor_id: int, db: Session = Depends(get_db)):
     ).all()
 
     result = []
-
     for appt in appointments:
         result.append({
             "appointment_id": appt.id,
@@ -95,4 +111,38 @@ def today_appointments(doctor_id: int, db: Session = Depends(get_db)):
             "symptoms": appt.symptoms
         })
 
-    return {"status": "success", "appointments": result}
+    return {"appointments": result}
+
+
+# -----------------------------------------------------------
+# 4️⃣ AI SUGGEST BEST SLOT FOR DOCTOR
+# -----------------------------------------------------------
+@router.get("/suggest-slot/{doctor_id}/{appointment_date}")
+def suggest(doctor_id: int, appointment_date: str, db: Session = Depends(get_db)):
+
+    appointments = db.query(Appointment).filter(
+        Appointment.doctor_id == doctor_id,
+        Appointment.appointment_date == appointment_date
+    ).all()
+
+    booked_times = [str(a.appointment_time) for a in appointments]
+
+    best_slot = suggest_slot(booked_times)
+
+    return {"best_slot": best_slot}
+
+
+# -----------------------------------------------------------
+# 5️⃣ AI SUMMARY FOR SYMPTOMS
+# -----------------------------------------------------------
+@router.get("/summary/{appointment_id}")
+def summary(appointment_id: int, db: Session = Depends(get_db)):
+
+    appt = db.query(Appointment).filter(Appointment.id == appointment_id).first()
+
+    if not appt:
+        raise HTTPException(404, "Appointment not found")
+
+    summary = summarize_symptoms(appt.symptoms)
+
+    return {"summary": summary}

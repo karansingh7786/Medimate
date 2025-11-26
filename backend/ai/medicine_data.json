@@ -1,0 +1,26 @@
+[
+    {
+        "name": "Paracetamol",
+        "manufacturer": "Cipla",
+        "is_fake": false,
+        "alternatives": ["Dolo 650", "Crocin"]
+    },
+    {
+        "name": "Dolo 650",
+        "manufacturer": "Micro Labs",
+        "is_fake": false,
+        "alternatives": ["Paracetamol", "Crocin"]
+    },
+    {
+        "name": "Amoxicillin",
+        "manufacturer": "GSK",
+        "is_fake": false,
+        "alternatives": ["Augmentin", "Moxikind"]
+    },
+    {
+        "name": "Painrelief-X",
+        "manufacturer": "Unknown",
+        "is_fake": true,
+        "alternatives": ["Paracetamol", "Ibuprofen"]
+    }
+]

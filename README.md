@@ -43,3 +43,4 @@ React.js,TailwindCSS,ShadCN UI,Axios,React Router
 
 🟩 Backend:
 FastAPI,Python,SQLAlchemy,MySQL,Pydantic,Uvicorn
+![WhatsApp Image 2025-11-29 at 8 27 06 AM](https://github.com/user-attachments/assets/e6a93cb1-cbbd-4a8d-9cd7-3b24a5587edc)
